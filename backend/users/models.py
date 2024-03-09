@@ -1,5 +1,3 @@
-"""Импорт и переопределение модели AbstractUser."""
-
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.db.models import UniqueConstraint
@@ -50,11 +48,11 @@ class User(AbstractUser):
         blank=True)
 
     def __str__(self):
-        """Возвращает никнейм пользователя."""
+        """Никнейм пользователя."""
         return self.username
 
     class Meta:
-        """Метакласс переопределнной модели User."""
+        """Переопределнной модели User."""
 
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
@@ -83,11 +81,11 @@ class Subscription(models.Model):
     )
 
     def __str__(self):
-        """Возвращает сообщение о подписке пользователя на автора."""
+        """Собщение о подписке пользователя на автора."""
         return f'Пользователь {self.user} подписался на {self.author}'
 
     class Meta:
-        """Метакласс подписки на пользователя."""
+        """Подписки на пользователя."""
         ordering = ['user', 'author']
         constraints = [
             UniqueConstraint(

@@ -24,7 +24,7 @@ class Ingredient(models.Model):
         verbose_name_plural = 'Ингридиенты'
 
     def __str__(self):
-        """Возвращает название Ингридента"""
+        """Название Ингридента"""
         return self.name
 
 
@@ -52,7 +52,7 @@ class Tag(models.Model):
         verbose_name_plural = 'Тэги'
 
     def __str__(self):
-        """Возвращает имя Тега."""
+        """Имя Тега."""
         return self.name
 
 
@@ -108,12 +108,12 @@ class Recipe(models.Model):
         verbose_name_plural = 'Рецепты'
 
     def __str__(self):
-        """Возвращает название Рецепта."""
+        """Название Рецепта."""
         return self.name
 
 
 class IngredientAmount(models.Model):
-    """Модель количества ингридиентов в рецепте."""
+    """Модель количества ингридиентов."""
     ingredient = models.ForeignKey(
         Ingredient,
         on_delete=models.CASCADE,
@@ -143,12 +143,12 @@ class IngredientAmount(models.Model):
         ]
 
     def __str__(self):
-        """Возвращает строку Рецепт - Ингридиент в нём."""
+        """Рецепт - Ингридиент в нём."""
         return f'{self.recipe} - {self.ingredient}'
 
 
 class Favorite(models.Model):
-    """Модель для избранного рецепта."""
+    """Модель избранного рецепта."""
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -174,11 +174,11 @@ class Favorite(models.Model):
         ]
 
     def __str__(self):
-        """Возвращает связь Автор - Рецепт."""
+        """Автор - Рецепт."""
         return f'{self.user} - {self.recipe}'
 
 
-class ShoppingСart(models.Model):
+class ShoppingCart(models.Model):
     """Модель списка покупок."""
     user = models.ForeignKey(
         User,
@@ -204,5 +204,5 @@ class ShoppingСart(models.Model):
         ]
 
     def __str__(self):
-        """Возвращает список покупок пользователя."""
+        """Список покупок пользователя."""
         return f'{self.user} - {self.recipe}'

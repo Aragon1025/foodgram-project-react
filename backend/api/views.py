@@ -1,12 +1,12 @@
 from django.shortcuts import HttpResponse, get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from djoser.views import UserViewSet
-from reportlab.pdfbase import pdfmetrics
-from reportlab.pdfbase.ttfonts import TTFont
-from reportlab.pdfgen import canvas
+#from djoser.views import UserViewSet
+#from reportlab.pdfbase import pdfmetrics
+#from reportlab.pdfbase.ttfonts import TTFont
+#from reportlab.pdfgen import canvas
 from rest_framework import status, views, viewsets
 from rest_framework.decorators import action
-from rest_framework.generics import ListAPIView
+#from rest_framework.generics import ListAPIView
 from rest_framework.permissions import (SAFE_METHODS, AllowAny,
                                         IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
@@ -16,62 +16,67 @@ from api.filters import IngredientSearchFilter, RecipesFilter
 from api.pagination import CustomPagination
 from api.permissions import IsAuthenticatedAuthorOrReadOnly
 from api.serializers import (CustomUserSerializer, IngredientSerializer,
-                             RecipeReadSerializer, RecipeWriteSerializer,
+                             RecipeReadsSerializer, RecipeWritiSerializer,
                              ShortRecipeSerializer, SubscriptionSerializer,
                              TagSerializer)
 from recipes.models import (Favorite, Ingredient, IngredientAmount, Recipe,
-                            ShoppingСart, Tag)
+                            ShoppingCart, Tag)
 from users.models import Subscription, User
 
 
-def pdf_generation(value_list):
-    final_list = {}
+def generate_shopping_list(value_list):
+    """
+    Генерирует текстовый список ингредиентов для покупки.
+
+    Args:
+    value_list (list): Список значений ингредиентов.
+
+    Returns:
+    str: Текстовый список ингредиентов.
+    """
+    shopping_list = {}
     for item in value_list:
-        name = item[0]
-        if name not in final_list:
-            final_list[name] = {
-                'measurement_unit': item[1],
-                'amount': item[2]
+        name, measurement_unit, amount = item
+        if name not in shopping_list:
+            shopping_list[name] = {
+                'measurement_unit': measurement_unit,
+                'amount': amount
             }
         else:
-            final_list[name]['amount'] += item[2]
-    pdfmetrics.registerFont(
-        TTFont('Halogen', 'Halogen.ttf', 'UTF-8'))
-    response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = (
-        'attachment; '
-        'filename="shopping_list.pdf"'
-    )
-    page = canvas.Canvas(response)
-    page.setFont('Halogen', size=24)
-    page.drawString(200, 800, 'Список ингредиентов')
-    page.setFont('Halogen', size=16)
-    height = 750
-    for i, (name, data) in enumerate(final_list.items(), 1):
-        page.drawString(75, height, (f'<{i}> {name} - {data["amount"]}, '
-                                     f'{data["measurement_unit"]}'))
-        height -= 25
-    page.showPage()
-    page.save()
-    return response
+            shopping_list[name]['amount'] += amount
+
+    formatted_list = []
+    for index, (name, data) in enumerate(shopping_list.items(), start=1):
+        formatted_list.append(f"{index}. {name} ({data['measurement_unit']}) - {data['amount']}")
+
+    return "\n".join(formatted_list)
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    Представление для просмотра тегов.
+    """
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
     permission_classes = (IsAuthenticatedOrReadOnly,)
 
 
 class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    Представление для просмотра ингредиентов.
+    """
     queryset = Ingredient.objects.all()
-    serializer_class = IngredientSerializer
     permission_classes = (AllowAny,)
+    serializer_class = IngredientSerializer
     filter_backends = (IngredientSearchFilter,)
     search_fields = ('^name',)
     pagination_class = None
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
+    """
+    Представление для просмотра, создания, обновления и удаления рецептов.
+    """
     queryset = Recipe.objects.all()
     pagination_class = CustomPagination
     filter_backends = (DjangoFilterBackend,)
@@ -79,16 +84,25 @@ class RecipeViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticatedAuthorOrReadOnly]
 
     def perform_create(self, serializer):
+        """
+        Сохранение рецепта с указанием автора.
+        """
         serializer.save(author=self.request.user)
 
     def get_serializer_class(self):
-        if self.request.method in SAFE_METHODS:
-            return RecipeReadSerializer
-        return RecipeWriteSerializer
+        """
+        Определяет класс сериализатора в зависимости от метода запроса.
+        """
+        if self.request.method in ['GET']:
+            return RecipeReadsSerializer
+        return RecipeWritiSerializer
 
     @action(detail=True, methods=['post', 'delete'],
             permission_classes=[IsAuthenticated])
     def favorite(self, request, pk):
+        """
+        Добавляет или удаляет рецепт из избранного пользователя.
+        """
         if request.method == 'POST':
             return self.add_obj(Favorite, request.user, pk)
         if request.method == 'DELETE':
@@ -98,6 +112,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post', 'delete'],
             permission_classes=[IsAuthenticated])
     def shopping_cart(self, request, pk):
+        """
+        Добавляет или удаляет рецепт из корзины покупок пользователя.
+        """
         if request.method == 'POST':
             return self.add_obj(ShoppingСart, request.user, pk)
         if request.method == 'DELETE':
@@ -107,14 +124,25 @@ class RecipeViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'],
             permission_classes=[IsAuthenticated])
     def download_shopping_cart(self, request):
+        """
+        Генерирует и возвращает список ингредиентов для покупок в формате TXT.
+        """
         ingredients = IngredientAmount.objects.filter(
             recipe__shoppingcart_recipe__user=request.user
         ).values_list(
             'ingredient__name', 'ingredient__measurement_unit',
-            'amount')
-        return pdf_generation(ingredients)
+            'amount'
+        )
+        shopping_list = generate_shopping_list(ingredients)
+        response = HttpResponse(content_type='text/plain')
+        response['Content-Disposition'] = 'attachment; filename="shopping_list.txt"'
+        response.write(shopping_list)
+        return response
 
-    def add_obj(self, model, user, pk):
+    def add_obje(self, model, user, pk):
+        """
+        Добавляет объект модели (рецепт) к пользователю (проверяет наличие дубликатов).
+        """
         if model.objects.filter(user=user, recipe__id=pk).exists():
             return Response({
                 'errors': 'Рецепт уже добавлен в список'
@@ -124,23 +152,32 @@ class RecipeViewSet(viewsets.ModelViewSet):
         serializer = ShortRecipeSerializer(recipe)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    def delete_obj(self, model, user, pk):
+    def delete_obje(self, model, user, pk):
+        """
+        Удаляет объект модели (рецепт) к пользователю.
+        """
         obj = model.objects.filter(user=user, recipe__id=pk)
         if obj.exists():
             obj.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         return Response({
-            'errors': 'Рецепт уже удален'
+            'errors': 'Рецепт удален ранее'
         }, status=status.HTTP_400_BAD_REQUEST)
 
 
-class CustomUserViewSet(UserViewSet):
+class CustomUserViewSet(viewsets.ModelViewSet):
+    """
+    Удаляет объект модели (рецепт) у пользователя.
+    """
     queryset = User.objects.all()
     serializer_class = CustomUserSerializer
-    permission_classes = (IsAuthenticatedOrReadOnly,)
+    permission_classes = (IsAuthenticated,)
 
 
-class SubscriptionViewSet(ListAPIView):
+class SubscriptionViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    Представление для просмотра, создания, обновления и удаления пользователей.
+    """
     serializer_class = SubscriptionSerializer
     pagination_class = CustomPagination
     permission_classes = (IsAuthenticated,)
@@ -151,11 +188,17 @@ class SubscriptionViewSet(ListAPIView):
 
 
 class SubscribeView(views.APIView):
+    """
+    Представление для подписки на пользователей и отписки от них.
+    """
     serializer_class = SubscriptionSerializer
     pagination_class = CustomPagination
     permission_classes = (IsAuthenticated,)
 
     def post(self, request, *args, **kwargs):
+        """
+        Добавляет подписку на пользователя.
+        """
         user_id = self.kwargs.get('user_id')
         if user_id == request.user.id:
             return Response(
@@ -181,6 +224,9 @@ class SubscribeView(views.APIView):
         )
 
     def delete(self, request, *args, **kwargs):
+        """
+        Удаляет подписку на пользователя.
+        """
         user_id = self.kwargs.get('user_id')
         get_object_or_404(User, id=user_id)
         subscription = Subscription.objects.filter(

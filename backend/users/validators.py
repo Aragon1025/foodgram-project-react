@@ -1,4 +1,3 @@
-"""Валидаторы для данных пользователя."""
 import re
 
 from django.core.exceptions import ValidationError
