@@ -37,10 +37,10 @@ jobs:
 
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip 
-          pip install flake8==6.0.0 flake8-isort==6.0.0
-          pip install -r ./backend/requirements.txt
-
+          python -m pip install --upgrade pip
+          pip install flake8
+          cd backend/foodgram/
+          pip install -r requirements.txt 
       - name: Test with flake8 and django tests
         env:
           POSTGRES_USER: django_user
@@ -49,11 +49,10 @@ jobs:
           DB_HOST: 127.0.0.1
           DB_PORT: 5432
         run: |
-          python -m flake8 backend/
-          cd backend/
-          python manage.py test
+          python -m flake8
 
   build_and_push_to_docker_hub:
+    name: Push Docker image to Docker Hub
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
     needs: tests
@@ -74,7 +73,7 @@ jobs:
         id: push_backend_image
         uses: docker/build-push-action@v4
         with:
-          context: ./backend/
+          context: ./backend/foodgram/
           push: true
           tags: ${{ secrets.NAME_DOCKER }}/Foodgram_backend:latest
 
@@ -88,138 +87,27 @@ jobs:
               -d text="Ошибка при публикации образа Docker backend!"
             exit 1
           fi
- 
-  frontend_tests:
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
-    steps:
-      - name: Check out the repo
-        uses: actions/checkout@v3
 
-      - name: Set up nodeJS
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18
-
-      - name: Install dependencies
-        run: |
-          cd frontend/
-          npm ci
-
-      - name: Test frontend
-        run: |
-          cd frontend/
-          npm run test
-
-  build_frontend_and_push_to_docker_hub:
-    name: Push frontend Docker image to DockerHub
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
-    needs: frontend_tests
-    steps:
-      - name: Check out the repo
-        uses: actions/checkout@v3
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-
-      - name: Login to Docker 
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-
-      - name: Push to DockerHub
-        id: push_frontend_image
-        uses: docker/build-push-action@v4
-        with:
-          context: ./frontend/
-          push: true
-          tags: ${{ secrets.NAME_DOCKER }}/Foodgram_frontend:latest
-
-      - name: Check if Docker image push was successful
-        run: |
-          if [ ${{ steps.push_frontend_image.outputs.status }} != "success" ]; then
-            echo "Error: Docker image push was not successful"
-            curl -s -X POST \
-              https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage \
-              -d chat_id=${{ secrets.TELEGRAM_TO }} \
-              -d text="Ошибка при публикации образа Docker frontend!"
-            exit 1
-          fi
-
-  build_gateway_and_push_to_docker_hub:
-    name: Push gateway Docker image to DockerHub
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
-    steps:
-      - name: Check out the repo
-        uses: actions/checkout@v3
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-
-      - name: Login to Docker 
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-
-      - name: Push to DockerHub
-        uses: docker/build-push-action@v2
-        id: push_gateway_image
-        with:
-          context: ./nginx/
-          push: true
-          tags: ${{ secrets.NAME_DOCKER }}/Foodgram_gateway:latest
-
-      - name: Check if Docker image push was successful
-        run: |
-          if [ ${{ steps.push_gateway_image.outputs.status }} != "success" ]; then
-            echo "Error: Docker image push was not successful"
-            curl -s -X POST \
-              https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage \
-              -d chat_id=${{ secrets.TELEGRAM_TO }} \
-              -d text="Ошибка при публикации образа Docker gateway!"
-            exit 1
-          fi
-  
   deploy:
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
-    needs: 
-      - build_and_push_to_docker_hub
-      - build_frontend_and_push_to_docker_hub
-      - build_gateway_and_push_to_docker_hub
+    needs: build_and_push_to_docker_hub
+    if: github.ref == 'refs/heads/master'
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v3
-
       - name: Copy docker-compose.yml via ssh
-        uses: appleboy/scp-action@master
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USER }}
-          key: ${{ secrets.SSH_KEY }}
-          passphrase: ${{ secrets.SSH_PASSPHRASE }}
-          source: "docker-compose.production.yml"
-          target: "footgram"
-
-      - name: Executing remote ssh commands to deploy
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USER }}
           key: ${{ secrets.SSH_KEY }}
-          passphrase: ${{ secrets.SSH_PASSPHRASE }}
+          passphrase: ${{ secrets.PASSPHRASE }}
           script: |
-            cd footgram
-            sudo docker compose -f docker-compose.production.yml pull
-            sudo docker compose -f docker-compose.production.yml down
-            sudo docker compose -f docker-compose.production.yml up -d
-            sudo docker compose -f docker-compose.production.yml exec backend python manage.py migrate
-            sudo docker compose -f docker-compose.production.yml exec backend python manage.py collectstatic
-            sudo docker compose -f docker-compose.production.yml exec backend cp -r /app/collected_static/. /backend_static/static/
+            cd foodgram
+            sudo docker compose stop
+            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/foodgram_backend:latest
+            sudo docker compose up -d
+            sudo docker compose exec backend python manage.py migrate
+            sudo docker compose exec backend python manage.py collectstatic --no-input
+            sudo docker compose exec backend python manage.py loadmodels
 
             if [ $? -ne 0 ]; then
               curl -s -X POST \
