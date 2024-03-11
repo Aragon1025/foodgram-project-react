@@ -10,7 +10,6 @@ from recipes.models import (
 from users.models import Subscription, User
 
 
-
 class CustomUserSerializer(UserSerializer):
     """
     Сериализатор для модели пользователя.
