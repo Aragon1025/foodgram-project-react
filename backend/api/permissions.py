@@ -1,5 +1,6 @@
 from rest_framework import permissions
 
+
 class IsAuthenticatedAuthorOrReadOnly(permissions.BasePermission):
     """
     Разрешение, позволяющее только авторизованным пользователям
@@ -18,7 +19,7 @@ class IsAuthenticatedAuthorOrReadOnly(permissions.BasePermission):
 
     def has_object_permission(self, request, view, obj):
         """
-        Проверяет, имеет ли пользователь разрешение на выполнение действия над объектом.
+        Проверяет, имеет ли пользователь разрешение на действия над объектом.
         """
         return request.method in permissions.SAFE_METHODS or (
             obj.author == request.user

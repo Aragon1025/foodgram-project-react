@@ -3,7 +3,6 @@ from djoser.serializers import UserCreateSerializer, UserSerializer
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
-
 from recipes.models import (Favorite, Ingredient, IngredientAmount, Recipe,
                             ShoppingCart, Tag)
 from users.models import Subscription, User
@@ -258,7 +257,7 @@ class FavoriteSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         """
-        Проверяет, существует ли уже запись о рецепте в избранном для данного пользователя.
+        Проверяет, существует ли уже запись о рецепте в избранном.
         """
         user, recipe = data.get('user'), data.get('recipe')
         if self.Meta.model.objects.filter(user=user, recipe=recipe).exists():

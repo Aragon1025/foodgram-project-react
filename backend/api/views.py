@@ -1,13 +1,8 @@
 from django.shortcuts import HttpResponse, get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-#from djoser.views import UserViewSet
-#from reportlab.pdfbase import pdfmetrics
-#from reportlab.pdfbase.ttfonts import TTFont
-#from reportlab.pdfgen import canvas
 from rest_framework import status, views, viewsets
 from rest_framework.decorators import action
-#from rest_framework.generics import ListAPIView
-from rest_framework.permissions import (SAFE_METHODS, AllowAny,
+from rest_framework.permissions import (AllowAny,
                                         IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
 from rest_framework.response import Response
@@ -47,7 +42,9 @@ def generate_shopping_list(value_list):
 
     formatted_list = []
     for index, (name, data) in enumerate(shopping_list.items(), start=1):
-        formatted_list.append(f"{index}. {name} ({data['measurement_unit']}) - {data['amount']}")
+        formatted_list.append(
+            f"{index}. {name} ({data['measurement_unit']}) - {data['amount']}"
+        )
 
     return "\n".join(formatted_list)
 
@@ -116,9 +113,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
         Добавляет или удаляет рецепт из корзины покупок пользователя.
         """
         if request.method == 'POST':
-            return self.add_obj(ShoppingСart, request.user, pk)
+            return self.add_obj(ShoppingCart, request.user, pk)
         if request.method == 'DELETE':
-            return self.delete_obj(ShoppingСart, request.user, pk)
+            return self.delete_obj(ShoppingCart, request.user, pk)
         return None
 
     @action(detail=False, methods=['get'],
@@ -135,13 +132,15 @@ class RecipeViewSet(viewsets.ModelViewSet):
         )
         shopping_list = generate_shopping_list(ingredients)
         response = HttpResponse(content_type='text/plain')
-        response['Content-Disposition'] = 'attachment; filename="shopping_list.txt"'
+        response['Content-Disposition'] = (
+            'attachment; filename="shopping_list.txt"'
+        )
         response.write(shopping_list)
         return response
 
     def add_obje(self, model, user, pk):
         """
-        Добавляет объект модели (рецепт) к пользователю (проверяет наличие дубликатов).
+        Добавляет модель (рецепт) к пользователю.
         """
         if model.objects.filter(user=user, recipe__id=pk).exists():
             return Response({

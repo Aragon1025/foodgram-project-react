@@ -1,7 +1,6 @@
 from django_filters import rest_framework as filters
 from rest_framework.filters import SearchFilter
-
-from recipes.models import Recipe, Tag
+from recipes.models import Tag, Recipe
 from users.models import User
 
 
@@ -31,12 +30,12 @@ class RecipesFilter(filters.FilterSet):
     is_favorited = filters.BooleanFilter(
         method='get_is_favorited',
         label='В избранном',
-        help_text='Фильтр рецептов, которые находятся в избранном у пользователя.'
+        help_text='Фильтр рецептов, которые находятся в избранном.'
     )
     is_in_shopping_cart = filters.BooleanFilter(
         method='get_is_in_shopping_cart',
         label='В корзине',
-        help_text='Фильтр рецептов, которые находятся в корзине покупок у пользователя.'
+        help_text='Фильтр рецептов, которые находятся в корзине покупок.'
     )
 
     class Meta:
@@ -45,7 +44,7 @@ class RecipesFilter(filters.FilterSet):
 
     def get_is_favorited(self, queryset, name, value):
         """
-        Фильтр рецептов, которые добавлены в избранное пользователем.
+        Фильтр рецептов, которые добавлены в избранное.
         """
         user = self.request.user
         if value and user.is_authenticated:
@@ -54,7 +53,7 @@ class RecipesFilter(filters.FilterSet):
 
     def get_is_in_shopping_cart(self, queryset, name, value):
         """
-        Фильтр рецептов, которые добавлены в корзину покупок пользователем.
+        Фильтр рецептов, которые добавлены в корзину покупок.
         """
         user = self.request.user
         if value and user.is_authenticated:
