@@ -2,7 +2,7 @@ version: '3.9'
 
 services:
   db:
-    image: postgres:14.8-bullseye
+    image: postgres:13.10
     restart: always
     env_file: ./.env
     volumes:
