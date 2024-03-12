@@ -1,31 +1,30 @@
 version: '3.9'
-services:
 
+services:
   db:
     image: postgres:14.8-bullseye
+    restart: always
+    env_file: ./.env
     volumes:
-      - postgres_data:/var/lib/postgresql/data/
-    env_file:
-      - ./.env
-  
-  web:
+      - pg_data:/var/lib/postgresql/data
+
+  backend:
     image: aragon1025/foodgram_backend:latest
     restart: always
     volumes:
-      - data_value:/code/data/
-      - static_value:/app/static/
-      - media_value:/app/media/
+      - data:/code/data/
+      - static:/code/static/
+      - media:/code/media/
     depends_on:
       - db
-    env_file:
-      - ./.env
+    env_file: ./.env
   
   frontend:
     image: aragon1025/foodgram_frontend:latest
     volumes:
       - ../frontend/:/app/result_build/
     depends_on:
-      - web
+      - backend
   
   nginx:
     image: nginx:1.19.3
@@ -38,7 +37,6 @@ services:
       - static_value:/var/html/static/
       - media_value:/var/html/media/
     depends_on:
-      - web
       - frontend
 
 volumes:
