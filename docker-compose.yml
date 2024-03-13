@@ -1,7 +1,7 @@
 version: '3.9'
 
 volumes:
-  pg_data:
+  postgres_data:
   static:
   media:
   docs_volume:
