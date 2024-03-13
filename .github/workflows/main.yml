@@ -164,3 +164,4 @@ jobs:
             https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage \
             -d chat_id=${{ secrets.TELEGRAM_TO }} \
             -d text="Деплой успешно выполнен! Поздравляем Push: ${{ github.actor }} Сообщение коммита: ${{ github.event.commits[0].message }} Ссылка на коммит: https://github.com/${{ github.repository }}/commit/${{ github.sha }}"
+
