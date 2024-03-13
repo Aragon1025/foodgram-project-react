@@ -20,7 +20,9 @@ services:
     env_file: ./.env
   
   frontend:
+    env_file: .env
     image: aragon1025/foodgram_frontend:latest
+    command: cp -r /app/build/. /frontend_static/
     volumes:
       - ../frontend/:/app/result_build/
     depends_on:
