@@ -9,14 +9,14 @@ from rest_framework.response import Response
 from api.filters import IngredientSearchFilter, RecipesFilter
 from api.pagination import CustomPagination
 from api.permissions import IsAuthenticatedAuthorOrReadOnly
-from api.serializers import (CustomUserSerializer, IngredientSerializer,
+from api.serializers import (UserSerializer, IngredientSerializer,
                              RecipeReadsSerializer, RecipeWritiSerializer,
                              ShortRecipeSerializer, SubscriptionSerializer,
                              TagSerializer)
 
 from recipes.models import (Favorite, Ingredient, IngredientAmount, Recipe,
                             ShoppingCart, Tag)
-from users.models import Subscription, User
+from users.models import Follow, User
 
 
 def generate_shopping_list(value_list):
@@ -169,7 +169,7 @@ class CustomUserViewSet(viewsets.ModelViewSet):
     Удаляет объект модели (рецепт) у пользователя.
     """
     queryset = User.objects.all()
-    serializer_class = CustomUserSerializer
+    serializer_class = UserSerializer
     permission_classes = (IsAuthenticated,)
 
 
@@ -204,7 +204,7 @@ class SubscribeView(views.APIView):
                 {'Запрещено подписываться на себя'},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        if Subscription.objects.filter(
+        if Follow.objects.filter(
                 user=request.user,
                 author_id=user_id
         ).exists():
@@ -213,7 +213,7 @@ class SubscribeView(views.APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
         author = get_object_or_404(User, id=user_id)
-        Subscription.objects.create(
+        Follow.objects.create(
             user=request.user,
             author_id=user_id
         )
@@ -228,7 +228,7 @@ class SubscribeView(views.APIView):
         """
         user_id = self.kwargs.get('user_id')
         get_object_or_404(User, id=user_id)
-        subscription = Subscription.objects.filter(
+        subscription = Follow.objects.filter(
             user=request.user,
             author_id=user_id
         )

@@ -1,48 +1,40 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
+from rest_framework.fields import SerializerMethodField
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from drf_extra_fields.fields import Base64ImageField
 from recipes.models import (
     Favorite, Ingredient, IngredientAmount, Recipe,
     ShoppingCart, Tag
 )
-from users.models import Subscription, User
+from users.models import Follow, User
 
 
-class CustomUserSerializer(UserSerializer):
-    """
-    Сериализатор для модели пользователя.
-    """
-    is_subscribed = serializers.SerializerMethodField()
+class UserSerializer(UserSerializer):
+    """ Сериализатор пользователя """
+    is_subscribed = SerializerMethodField(read_only=True)
 
     class Meta:
         model = User
-        fields = (
-            'email', 'id', 'username', 'first_name',
-            'last_name', 'is_subscribed'
-        )
+        fields = ('email', 'id', 'username', 'first_name',
+                  'last_name', 'is_subscribed', )
 
     def get_is_subscribed(self, obj):
-        """
-        Получает информацию о подписке пользователя.
-        """
-        user = self.context.get('request').user
-        if user.is_anonymous:
+        request = self.context.get('request')
+        if self.context.get('request').user.is_anonymous:
             return False
-        return Subscription.objects.filter(user=user, author=obj).exists()
+        return obj.following.filter(user=request.user).exists()
 
 
-class CustomUserCreateSerializer(UserCreateSerializer):
-    """
-    Сериализатор для создания пользователя.
-    """
+class UserCreateSerializer(UserCreateSerializer):
+    """ Сериализатор создания пользователя """
+
     class Meta:
         model = User
         fields = (
-            'email', 'id', 'username', 'first_name',
-            'last_name', 'password'
-        )
+            'email', 'username', 'first_name',
+            'last_name', 'password')
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -89,7 +81,7 @@ class RecipeReadsSerializer(serializers.ModelSerializer):
     Сериализатор для чтения рецепта.
     """
     tags = TagSerializer(many=True, read_only=True)
-    author = CustomUserSerializer(read_only=True)
+    author = UserSerializer(read_only=True)
     ingredients = IngredientAmountSerializer(
         source='ingredientamount_set',
         many=True,
@@ -145,7 +137,7 @@ class RecipeWritiSerializer(serializers.ModelSerializer):
     """
     image = Base64ImageField()
     tags = TagSerializer(read_only=True, many=True)
-    author = CustomUserSerializer(read_only=True)
+    author = UserSerializer(read_only=True)
     ingredients = IngredientAmountSerializer(
         source='ingredientamount_set',
         many=True,
@@ -283,7 +275,7 @@ class ShoppingCartSerializer(serializers.ModelSerializer):
         model = ShoppingCart
 
 
-class SubscriptionSerializer(CustomUserSerializer):
+class SubscriptionSerializer(UserSerializer):
     """
     Сериализатор для модели Subscription.
     """
@@ -305,7 +297,7 @@ class SubscriptionSerializer(CustomUserSerializer):
             raise serializers.ValidationError(
                 {'error': 'Запрещено подписываться на себя'}
             )
-        if Subscription.objects.filter(
+        if Follow.objects.filter(
                 user=request.user,
                 author_id=user_id
         ).exists():

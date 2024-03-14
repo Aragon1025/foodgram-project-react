@@ -14,6 +14,8 @@ DEBUG = os.getenv('DEBUG', '').lower() == 'true'
 
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
+AUTH_USER_MODEL = 'users.User'
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -84,20 +86,16 @@ DATABASES = {
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.'
-                'UserAttributeSimilarityValidator',
+        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.'
-                'MinimumLengthValidator',
+        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.'
-                'CommonPasswordValidator',
+        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.'
-                'NumericPasswordValidator',
+        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
 
@@ -114,17 +112,18 @@ REST_FRAMEWORK = {
 }
 
 DJOSER = {
-    'HIDE_USERS': False,
-    'LOGIN_FIELD': 'email',
-    'PERMISSIONS': {
-        'user': ['rest_framework.permissions.AllowAny'],
-        'user_list': ['rest_framework.permissions.AllowAny'],
+    "SERIALIZERS": {
+        "user_create": "api.serializers.UserCreateSerializer",
+        "user": "api.serializers.UserSerializer",
+        "current_user": "api.serializers.UserSerializer",
     },
-    'SERIALIZERS': {
-        'user_create': 'api.serializers.CustomUserCreateSerializer',
-        'user': 'api.serializers.CustomUserSerializer',
-        'current_user': 'api.serializers.CustomUserSerializer',
+
+    "PERMISSIONS": {
+        "user": ["djoser.permissions.CurrentUserOrAdminOrReadOnly"],
+        "user_list": ["rest_framework.permissions.IsAuthenticatedOrReadOnly"],
     },
+
+    "HIDE_USERS": False,
 }
 # Internationalization
 # https://docs.djangoproject.com/en/3.2/topics/i18n/
@@ -138,8 +137,6 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
-
-AUTH_USER_MODEL = 'users.User'
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
@@ -160,3 +157,9 @@ MAX_LENGTH_HEX = 7
 
 MAX_LENGTH_EMAIL = 254
 MAX_LENGTH_USER_NAMES_INFO = 150
+
+LENGTH_USER_1 = 150
+
+LENGTH_USER_2 = 254
+
+LENGTH_RECIPES = 200
