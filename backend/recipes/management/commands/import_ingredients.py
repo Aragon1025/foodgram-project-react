@@ -16,7 +16,7 @@ def iter_json(file_path: str):
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-        reader = iter_json('/data/ingredients.json')
+        reader = iter_json('/backend/data/ingredients.json')
         for row in reader:
             ingredient = Ingredient(name=row['name'],
                                     measurement_unit=row['measurement_unit'])
