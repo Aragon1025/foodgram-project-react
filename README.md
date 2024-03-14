@@ -26,3 +26,25 @@ git clone git@github.com:Aragon1025/foodgram-project-react.git
 * SECRET_KEY=django-insecure
 * ALLOWED_HOSTS=127.0.0.1 localhost # Задаем свой IP сервера, DNS имя
 * CSRF_TRUSTED_ORIGINS=http://127.0.0.1 http://localhost # Задаем свой IP сервера, DNS имя
+
+3. Установите вирутальное окружение и зависимости:
+```sh
+python -m venv venv
+pip install -r requirements.txt 
+
+4. Выполните команду из корневой директории
+docker-compose up --build
+
+5. После запуска, откройте контейнер web и в нём выполните следующие команды
+```sh
+python manage.py makemigrations
+python manage.py migrate
+python manage.py collectstatic --no-input
+python manage.py import_ingredients
+```
+
+## На сервер попасть можно по адресу https://aragon.serveblog.net/
+
+
+## Автор проекта
+- https://github.com/Aragon1025 "Трушков Павел"
