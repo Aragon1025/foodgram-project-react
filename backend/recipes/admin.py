@@ -23,7 +23,7 @@ class TagAdmin(admin.ModelAdmin):
 
 
 class RecipeAdmin(admin.ModelAdmin):
-    # Настройки для административной панели для модели Recipe
+    # Настройки для административной панел для модели Recipe
     list_display = ('name', 'author', 'count_favorites')
     list_filter = ('author', 'name', 'tags')
     search_fields = ('author__username', 'name', 'tags__name')
