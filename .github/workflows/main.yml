@@ -91,27 +91,28 @@ jobs:
           fi
 
   deploy:
-    runs-on: ubuntu-latest
-    needs: build_and_push_to_docker_hub
-    steps:
-    - name: executing remote ssh commands to deploy
-      uses: appleboy/ssh-action@master
-      with:
-        host: ${{ secrets.HOST }}
-        username: ${{ secrets.USER }}
-        key: ${{ secrets.SSH_KEY }}
-        passphrase: ${{ secrets.SSH_PASSPHRASE }}
-        script: |
-          sudo docker-compose stop
-          sudo docker-compose rm -f backend frontend
-          sudo docker image rm aragon1025/foodgram_backend aragon1025/foodgram_frontend
-          sudo docker-compose pull backend frontend
-          sudo docker-compose up -d
-          sudo docker compose -f docker-compose.yml exec backend python manage.py makemigrations recipes
-          sudo docker compose -f docker-compose.yml exec backend python manage.py makemigrations users
-          sudo docker compose -f docker-compose.yml exec backend python manage.py migrate
-          sudo docker compose -f docker-compose.yml exec backend python manage.py collectstatic --no-input
-          sudo docker compose -f docker-compose.yml exec backend python manage.py import_ingredients
+      runs-on: ubuntu-latest
+      needs: build_and_push_to_docker_hub
+      steps:
+        - name: executing remote ssh commands to deploy
+          uses: appleboy/ssh-action@master
+          with:
+            host: ${{ secrets.HOST }}
+            username: ${{ secrets.USER }}
+            key: ${{ secrets.SSH_KEY }}
+            passphrase: ${{ secrets.PASSPHRASE }}
+            script: |
+              sudo docker-compose stop
+              sudo docker-compose rm -f backend
+              sudo docker image rm -f ${{ secrets.DOCKER_USERNAME }}/foodgram_backend
+              sudo docker image pull ${{ secrets.DOCKER_USERNAME }}/foodgram_backend
+              echo DB_ENGINE=${{ secrets.DB_ENGINE }} > .env
+              echo DB_NAME=${{ secrets.DB_NAME }} >> .env
+              echo POSTGRES_USER=${{ secrets.POSTGRES_USER }} >> .env
+              echo POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} >> .env
+              echo DB_HOST=${{ secrets.DB_HOST }} >> .env
+              echo DB_PORT=${{ secrets.DB_PORT }} >> .env
+              sudo docker-compose up --force-recreate -d
 
           if [ $? -ne 0 ]; then
             curl -s -X POST \
