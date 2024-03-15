@@ -18,6 +18,8 @@ services:
     depends_on:
       - db
     env_file: ./.env
+    networks:
+      - backend_network
   
   frontend:
     env_file: .env
@@ -27,6 +29,8 @@ services:
       - ../frontend/:/app/result_build/
     depends_on:
       - backend
+    networks:
+      - backend_network
   
   nginx:
     image: nginx:latest
@@ -42,7 +46,12 @@ services:
       - ./docs/redoc.html:/usr/share/nginx/html/api/docs/redoc.html
       - ./docs/openapi-schema.yml:/usr/share/nginx/html/api/docs/openapi-schema.yml
     depends_on:
-      - backend
+      - frontend
+    networks:
+      - backend_network
+
+networks:
+  backend_network:
 
 volumes:
   postgres_data:
