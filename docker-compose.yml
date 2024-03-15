@@ -24,6 +24,8 @@ services:
     image: aragon1025/foodgram_frontend
     env_file: .env
     command: cp -r /app/build/. /frontend_static/
+    depends_on:
+      - backend
     volumes:
       - ./frontend/:/app/
       - static_value:/frontend_static/
@@ -36,8 +38,8 @@ services:
     env_file: .env
     ports:
       - 8000:80
-    depends_on:     
-     - backend
+    depends_on:
+      - frontend
     volumes:
       - static_value:/staticfiles/
       - media_value:/media/
