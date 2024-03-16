@@ -12,7 +12,11 @@ SECRET_KEY = os.getenv('MY_SECRET_KEY', get_random_secret_key())
 
 DEBUG = os.getenv('DEBUG', '').lower() == 'true'
 
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+allowed_hosts = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+
+allowed_hosts.append('aragon.servebeer.com')
+
+ALLOWED_HOSTS = allowed_hosts
 
 AUTH_USER_MODEL = 'users.User'
 
