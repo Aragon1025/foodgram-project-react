@@ -105,7 +105,11 @@ jobs:
             sudo docker-compose rm backend
             sudo docker pull ${{ secrets.DOCKER_USERNAME }}/foodgram_backend:latest
             sudo docker pull ${{ secrets.DOCKER_USERNAME }}/foodgram_frontend:latest
-            touch .env
+
+            cd foodgram
+            sudo rm -f .env        
+            sudo touch .env
+            sudo chmod 666 .env
             echo DB_ENGINE=${{ secrets.DB_ENGINE }} >> .env
             echo DB_NAME=${{ secrets.DB_NAME }} >> .env
             echo POSTGRES_USER=${{ secrets.POSTGRES_USER }} >> .env
@@ -113,6 +117,7 @@ jobs:
             echo DB_HOST=${{ secrets.DB_HOST }} >> .env
             echo DB_PORT=${{ secrets.DB_PORT }} >> .env
             echo SECRET_KEY=${{ secrets.SECRET_KEY }} >> .env
+            cd infra
             sudo docker-compose up -d
             sudo docker-compose exec backend python manage.py migrate
             sudo docker-compose exec backend python manage.py import_ingredients
