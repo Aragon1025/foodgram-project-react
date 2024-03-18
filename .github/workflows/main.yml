@@ -112,11 +112,11 @@ jobs:
           tags: ${{ secrets.DOCKER_USERNAME }}/foodgram_frontend:latest
 
   deploy:
-      runs-on: ubuntu-latest
-      if: github.ref == 'refs/heads/master'
-      needs: 
-        - build_and_push_to_docker_hub
-        - build_frontend_and_push_to_docker_hub
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master'
+    needs: 
+      - build_and_push_to_docker_hub
+      - build_frontend_and_push_to_docker_hub
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
