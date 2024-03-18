@@ -19,7 +19,7 @@ services:
     depends_on:
       - db
     env_file:
-      - ../.env
+      - ./.env
 
   frontend:
     image: aragon1025/foodgram_frontend
