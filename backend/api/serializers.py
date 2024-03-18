@@ -30,11 +30,18 @@ class UserSerializer(UserSerializer):
 class UserCreateSerializer(UserCreateSerializer):
     """ Сериализатор создания пользователя """
 
+    is_subscribed = SerializerMethodField(read_only=True)
+
     class Meta:
         model = User
         fields = (
-            'email', 'username', 'first_name',
-            'last_name', 'password')
+            'email',
+            'id',
+            'username',
+            'first_name',
+            'last_name',
+            'is_subscribed',
+        )
 
 
 class TagSerializer(serializers.ModelSerializer):
