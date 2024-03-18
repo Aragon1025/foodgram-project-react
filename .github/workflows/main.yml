@@ -147,7 +147,7 @@ jobs:
             sudo docker compose -f docker-compose.production.yml exec backend python manage.py migrate
             sudo docker compose -f docker-compose.production.yml exec backend python manage.py import_ingredients
             sudo docker compose -f docker-compose.production.yml exec backend python manage.py collectstatic
-            sudo docker compose -f docker-compose.yml exec backend cp -r /app/collected_static/. /app/static/
+            sudo docker compose -f docker-compose.yml exec backend cp -r /app/static/. /app/static/
 
             if [ $? -ne 0 ]; then
               curl -s -X POST \
