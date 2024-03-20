@@ -11,7 +11,8 @@ from api.pagination import CustomPagination
 from api.permissions import IsAuthenticatedAuthorOrReadOnly
 from api.serializers import (IngredientSerializer, RecipeReadsSerializer,
                              RecipeWritiSerializer, ShortRecipeSerializer,
-                             SubscriptionSerializer, TagSerializer)
+                             SubscriptionSerializer, TagSerializer,
+                             UserSerializer)
 from recipes.models import (Favorite, Ingredient, IngredientAmount, Recipe,
                             ShoppingCart, Tag)
 from users.models import Follow, User
