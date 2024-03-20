@@ -2,18 +2,16 @@ from django.shortcuts import HttpResponse, get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status, views, viewsets
 from rest_framework.decorators import action
-from rest_framework.permissions import (AllowAny,
-                                        IsAuthenticated,
+from rest_framework.permissions import (AllowAny, IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
 from rest_framework.response import Response
+
 from api.filters import IngredientSearchFilter, RecipesFilter
 from api.pagination import CustomPagination
 from api.permissions import IsAuthenticatedAuthorOrReadOnly
-from api.serializers import (UserSerializer, IngredientSerializer,
-                             RecipeReadsSerializer, RecipeWritiSerializer,
-                             ShortRecipeSerializer, SubscriptionSerializer,
-                             TagSerializer)
-
+from api.serializers import (IngredientSerializer, RecipeReadsSerializer,
+                             RecipeWritiSerializer, ShortRecipeSerializer,
+                             SubscriptionSerializer, TagSerializer)
 from recipes.models import (Favorite, Ingredient, IngredientAmount, Recipe,
                             ShoppingCart, Tag)
 from users.models import Follow, User
@@ -199,11 +197,13 @@ class SubscribeView(views.APIView):
         Добавляет подписку на пользователя.
         """
         user_id = self.kwargs.get('user_id')
+
         if user_id == request.user.id:
             return Response(
                 {'Запрещено подписываться на себя'},
                 status=status.HTTP_400_BAD_REQUEST
             )
+
         if Follow.objects.filter(
                 user=request.user,
                 author_id=user_id
@@ -212,11 +212,13 @@ class SubscribeView(views.APIView):
                 {'Вы уже подписаны на автора'},
                 status=status.HTTP_400_BAD_REQUEST
             )
+
         author = get_object_or_404(User, id=user_id)
         Follow.objects.create(
             user=request.user,
             author_id=user_id
         )
+
         return Response(
             self.serializer_class(author, context={'request': request}).data,
             status=status.HTTP_201_CREATED
@@ -228,14 +230,11 @@ class SubscribeView(views.APIView):
         """
         user_id = self.kwargs.get('user_id')
         get_object_or_404(User, id=user_id)
-        subscription = Follow.objects.filter(
-            user=request.user,
-            author_id=user_id
-        )
+        subscription = request.user.following.filter(author_id=user_id)
         if subscription:
             subscription.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         return Response(
-            {'Вы не подписаны на пользователя'},
+            {'error': 'Вы не подписаны на пользователя'},
             status=status.HTTP_400_BAD_REQUEST
         )
