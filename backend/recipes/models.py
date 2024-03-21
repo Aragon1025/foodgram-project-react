@@ -126,16 +126,20 @@ class Recipe(models.Model):
 class IngredientAmount(models.Model):
     """Модель количества ингредиентов."""
     ingredient = models.ForeignKey(
-        Ingredient,
+        to=Ingredient,
         on_delete=models.CASCADE,
-        verbose_name='Ингредиент',
+        verbose_name='Ингредиенты в рецепте',
+        related_name='recipe',
     )
     recipe = models.ForeignKey(
-        Recipe,
+        to=Recipe,
         on_delete=models.CASCADE,
-        verbose_name='Рецепт',
+        verbose_name='В каком рецепте ',
+        related_name='ingredient',
     )
     amount = models.PositiveSmallIntegerField(
+        verbose_name='Количество ингредиента',
+        default=1,
         validators=(
             validators.MinValueValidator(
                 MIN_INGREDIENT_AMOUNT,
@@ -146,7 +150,6 @@ class IngredientAmount(models.Model):
                 message=f'Максимальное количество ингредиентов {MAX_INGREDIENT_AMOUNT}',
             ),
         ),
-        verbose_name='Количество',
     )
 
     class Meta:
@@ -169,13 +172,18 @@ class Favorite(models.Model):
         User,
         on_delete=models.CASCADE,
         verbose_name='Автор рецепта',
-        related_name='favorite_user',
+        related_name='favorite',
     )
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
-        related_name='favorite_recipe',
+        related_name='favorite',
         verbose_name='Рецепт автора',
+    )
+    when_added = models.DateTimeField(
+        auto_now_add=True,
+        editable=False,
+        verbose_name='Дата добавления'
     )
 
     class Meta:

@@ -18,15 +18,25 @@ class User(AbstractUser):
         verbose_name='Фамилия',
     )
     email = models.EmailField(
-        max_length=settings.MAX_LENGTH_USER_NAMES,
+        max_length=settings.MAX_LENGTH_EMAIL,
         verbose_name='email',
         unique=True
     )
     username = models.CharField(
         verbose_name='username',
-        max_length=settings.MAX_LENGTH_EMAIL,
+        max_length=settings.MAX_LENGTH_USER_NAMES,
         unique=True,
         validators=(UnicodeUsernameValidator(), )
+    )
+    password = models.CharField(
+        verbose_name='Пароль',
+        max_length=settings.MAX_LENGTH_USER_NAMES,
+        help_text=f'Длинна пароля не более {settings.MAX_LENGTH_USER_NAMES}',
+    )
+    is_subscribed = models.BooleanField(
+        default=False,
+        verbose_name='Подписка',
+        help_text='Подписатся'
     )
 
     class Meta:
@@ -44,7 +54,7 @@ class Follow(models.Model):
         User,
         on_delete=models.CASCADE,
         verbose_name='Автор',
-        related_name='follower',
+        related_name='subscriber',
     )
     author = models.ForeignKey(
         User,
