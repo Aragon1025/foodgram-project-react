@@ -11,7 +11,7 @@ services:
 
 
   backend:
-    image: aragon1025/foodgram_backend
+    image: aragon1025/foodgram_backend:latest
     restart: always
     volumes:
       - static_value:/app/static/
