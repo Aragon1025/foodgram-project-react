@@ -2,62 +2,79 @@ from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 from api.pagination import CustomPagination
-from api.serializers import UserSerializer, FavoriteSerializer
+from api.serializers import CustomUserSerializer, SubscriptionSerializer
 from users.models import Follow
 
 User = get_user_model()
 
 
 class CustomUserViewSet(viewsets.ModelViewSet):
-    """
-    Пользовательское представление для работы с пользователями.
-    """
     queryset = User.objects.all()
-    serializer_class = UserSerializer
+    serializer_class = CustomUserSerializer
     pagination_class = CustomPagination
+    permission_classes = (AllowAny,)
+
+
+    @action(detail=False, methods=['GET'], permission_classes=[IsAuthenticated])
+    def me(self, request):
+        serializer = self.get_serializer(request.user)
+        return Response(serializer.data)
 
     @action(
         detail=True,
-        methods=('POST', 'DELETE',),
+        methods=['post', 'delete'],
         permission_classes=[IsAuthenticated]
     )
     def subscribe(self, request, pk=None):
-        """
-        Действие для подписки на пользователя.
-
-        Позволяет текущему пользователю подписаться на другого пользователя.
-        """
-        user = request.user
-        author = get_object_or_404(User, pk=pk)
+        subscriber = request.user
+        target_user = get_object_or_404(User, pk=pk)
+        subscribe_existence = Follow.objects.filter(
+            user=subscriber,
+            author=target_user
+        ).exists()
 
         if request.method == 'POST':
-            serializer = FavoriteSerializer(
-                data={'user': user.pk, 'author': author.pk},
-                context={'request': request, 'author': author}
+            if subscribe_existence:
+                return Response(
+                    {'errors': 'Данная подписка уже существует'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            if subscriber == target_user:
+                return Response(
+                    {'errors': 'Нельзя подписаться на самого себя'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            subscription = Follow.objects.create(user=subscriber, author=target_user)
+            serializer = CustomUserSerializer(
+                subscription.author,
+                context={'request': request}
             )
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-        elif request.method == 'DELETE':
-            follow_instance = Follow.objects.filter(user=user, author=author)
-            if follow_instance.exists():
-                follow_instance.delete()
-                return Response(status=status.HTTP_204_NO_CONTENT)
-            else:
-                return Response(status=status.HTTP_404_NOT_FOUND)
+        if not subscribe_existence:
+            return Response(
+                {'errors': 'Данной подписки не существует'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        Follow.objects.filter(user=subscriber, author=target_user).delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(
         detail=False,
-        permission_classes=[IsAuthenticated]
+        methods=('get',),
+        permission_classes=(IsAuthenticated,),
     )
     def subscriptions(self, request):
-        user = request.user
-        queryset = user.subscribing.all()
+        subscriber = request.user
+        queryset = User.objects.filter(following__user=subscriber)
         page = self.paginate_queryset(queryset)
-        serializer = UserSerializer(page, many=True, context={'request': request})
+        serializer = SubscriptionSerializer(
+            page,
+            many=True,
+            context={'request': request}
+        )
         return self.get_paginated_response(serializer.data)

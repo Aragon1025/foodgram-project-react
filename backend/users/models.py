@@ -28,11 +28,6 @@ class User(AbstractUser):
         unique=True,
         validators=(UnicodeUsernameValidator(), )
     )
-    password = models.CharField(
-        verbose_name='Пароль',
-        max_length=settings.MAX_LENGTH_USER_NAMES,
-        help_text=f'Длинна пароля не более {settings.MAX_LENGTH_USER_NAMES}',
-    )
     is_subscribed = models.BooleanField(
         default=False,
         verbose_name='Подписка',
