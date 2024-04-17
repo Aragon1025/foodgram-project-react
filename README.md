@@ -28,6 +28,10 @@ git clone git@github.com:Aragon1025/foodgram-project-react.git
 * ALLOWED_HOSTS=127.0.0.1 localhost # Задаем свой IP сервера, DNS имя
 * CSRF_TRUSTED_ORIGINS=http://127.0.0.1 http://localhost # Задаем свой IP сервера, DNS имя
 
+# Для добавления логирования в телеграм так же в файле .env можно указать поля 
+* TELEGRAM_TOKEN=Ваш токен телеграм бота 
+* TELEGRAM_CHAT_ID=Ваш ChatID в телеге
+
 3. Установите вирутальное окружение и зависимости:
 ```sh
 python -m venv venv
