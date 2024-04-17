@@ -25,3 +25,15 @@ class IsAuthenticatedAuthorOrReadOnly(permissions.BasePermission):
             obj.author == request.user
             or request.user.is_superuser
         )
+
+
+class CreateOrAuthenticatedUser(permissions.BasePermission):
+    """
+    Позволяет создавать или аунтефикация.
+    """
+    def has_permission(self, request, view):
+        if view.action == 'create':
+            return True
+        is_authenticated = request.user.is_authenticated
+        is_safe_method = request.method in permissions.SAFE_METHODS
+        return is_authenticated or is_safe_method

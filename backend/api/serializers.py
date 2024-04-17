@@ -8,7 +8,7 @@ from rest_framework.serializers import (
     SerializerMethodField,
 )
 from rest_framework.validators import UniqueTogetherValidator
-from djoser.serializers import UserCreateSerializer
+from djoser.serializers import UserSerializer, UserCreateSerializer
 from drf_extra_fields.fields import Base64ImageField
 
 from recipes.models import (
@@ -28,13 +28,16 @@ class CustomUserCreateSerializer(UserCreateSerializer):
 
     class Meta:
         model = User
-        fields = tuple(User.REQUIRED_FIELDS) + (
-            User.USERNAME_FIELD,
-            'password',
+        fields = (
+            'email',
+            'username',
+            'first_name',
+            'last_name',
+            'password'
         )
 
 
-class CustomUserSerializer(serializers.ModelSerializer):
+class CustomUserSerializer(UserSerializer):
     """
     Сериализатор для управления пользователями.
     """

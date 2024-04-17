@@ -5,6 +5,9 @@ from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
+from djoser.views import UserViewSet
+
+from api.permissions import CreateOrAuthenticatedUser
 from api.pagination import CustomPagination
 from api.serializers import CustomUserSerializer, SubscriptionSerializer
 from users.models import Follow
@@ -12,16 +15,10 @@ from users.models import Follow
 User = get_user_model()
 
 
-class CustomUserViewSet(viewsets.ModelViewSet):
+class CustomUserViewSet(UserViewSet):
     queryset = User.objects.all()
     serializer_class = CustomUserSerializer
-    pagination_class = CustomPagination
-    permission_classes = (AllowAny,)
-
-    @action(detail=False, methods=['GET'], permission_classes=[IsAuthenticated])
-    def me(self, request):
-        serializer = self.get_serializer(request.user)
-        return Response(serializer.data)
+    permission_classes = (CreateOrAuthenticatedUser,)
 
     @action(
         detail=True,
