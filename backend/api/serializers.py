@@ -15,10 +15,11 @@ from recipes.models import (
     Favorite, Ingredient, IngredientAmount, Recipe,
     ShoppingCart, Tag
 )
-from users.models import User, Follow
+from users.models import User
 
 
 User = get_user_model()
+
 
 class CustomUserCreateSerializer(UserCreateSerializer):
     """
@@ -74,12 +75,12 @@ class IngredientSerializer(serializers.ModelSerializer):
 
 
 class IngredientAmountSerializer(serializers.ModelSerializer):
-    """ 
-    Сериализатор для модели количества ингредиента. 
-    """ 
+    """
+    Сериализатор для модели количества ингредиента.
+    """
     id = serializers.PrimaryKeyRelatedField(queryset=Ingredient.objects.all())
-    name = serializers.ReadOnlyField(source='ingredient.name') 
-    measurement_unit = serializers.ReadOnlyField(source='ingredient.measurement_unit') 
+    name = serializers.ReadOnlyField(source='ingredient.name')
+    measurement_unit = serializers.ReadOnlyField(source='ingredient.measurement_unit')
     amount = serializers.IntegerField(min_value=1, max_value=32000)
 
     class Meta:
@@ -98,7 +99,7 @@ class AddIngredientToRecipeSerializer(serializers.ModelSerializer):
     Ингредиенты.
     """
     id = serializers.PrimaryKeyRelatedField(queryset=Ingredient.objects.all())
-    
+
     class Meta:
         model = IngredientAmount
         fields = ('id', 'amount')
