@@ -24,9 +24,9 @@ class CustomUserViewSet(UserViewSet):
         methods=['post', 'delete'],
         permission_classes=[IsAuthenticated]
     )
-    def subscribe(self, request, pk=None):
+    def subscribe(self, request, id):
         subscriber = request.user
-        target_user = get_object_or_404(User, pk=pk)
+        target_user = get_object_or_404(User, pk=id)
         subscribe_existence = Follow.objects.filter(
             user=subscriber,
             author=target_user

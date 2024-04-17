@@ -1,10 +1,11 @@
 import os
 from pathlib import Path
+import logging
 
 from django.core.management.utils import get_random_secret_key
-from dotenv import load_dotenv
 
-from .logging import TELEGRAM_TOKEN, TELEGRAM_CHAT_ID
+from dotenv import load_dotenv
+from .logging import telegram_handler
 
 load_dotenv()
 
@@ -15,10 +16,20 @@ SECRET_KEY = os.getenv('MY_SECRET_KEY', get_random_secret_key())
 DEBUG = os.getenv('DEBUG', '').lower() == 'true'
 
 allowed_hosts = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
-
 allowed_hosts.append('aragon.servebeer.com')
-
 ALLOWED_HOSTS = allowed_hosts
+
+# Корневой логгер
+root_logger = logging.getLogger()
+
+# Установите уровень логирования для корневого логгера на ERROR
+root_logger.setLevel(logging.ERROR)
+
+# Добавьте кастомный обработчик к корневому логгеру
+root_logger.addHandler(telegram_handler)
+
+# Отправьте приветственное сообщение
+telegram_handler.send_initial_message()
 
 INSTALLED_APPS = [
     'django.contrib.admin',
