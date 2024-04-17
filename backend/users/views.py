@@ -35,12 +35,12 @@ class CustomUserViewSet(UserViewSet):
         if request.method == 'POST':
             if subscribe_existence:
                 return Response(
-                    {'errors': 'Данная подписка уже существует'},
+                    {'errors': 'Подписка на пользователя уже существует!'},
                     status=status.HTTP_400_BAD_REQUEST
                 )
             if subscriber == target_user:
                 return Response(
-                    {'errors': 'Нельзя подписаться на самого себя'},
+                    {'errors': 'Подписка на самого себя невозможна!'},
                     status=status.HTTP_400_BAD_REQUEST
                 )
             subscription = Follow.objects.create(user=subscriber, author=target_user)
@@ -52,7 +52,7 @@ class CustomUserViewSet(UserViewSet):
 
         if not subscribe_existence:
             return Response(
-                {'errors': 'Данной подписки не существует'},
+                {'errors': 'Подписка не существует!'},
                 status=status.HTTP_400_BAD_REQUEST
             )
         Follow.objects.filter(user=subscriber, author=target_user).delete()
