@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+
 class TelegramHandler(logging.Handler):
     def __init__(self, token, chat_id):
         super().__init__()
