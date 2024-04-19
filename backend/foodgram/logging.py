@@ -29,7 +29,7 @@ class TelegramHandler(logging.Handler):
         data = {'chat_id': self.chat_id, 'text': initial_message}
         response = requests.post(url, data=data)
         if response.status_code != 200:
-            print('Не удалось отправить начальное сообщение в Telegram:', 
+            print('Не удалось отправить начальное сообщение в Telegram:',
                   response.text)
 
 
