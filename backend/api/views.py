@@ -21,6 +21,7 @@ class TagViewSet(viewsets.ReadOnlyModelViewSet):
     Представление для просмотра тегов.
     """
     queryset = Tag.objects.all()
+    pagination_class = None
     serializer_class = TagSerializer
     permission_classes = (IsAuthenticatedOrReadOnly,)
 

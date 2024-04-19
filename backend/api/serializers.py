@@ -121,10 +121,8 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
             MaxValueValidator(settings.VALUE_RECIPE_MAX)
         ]
     )
-    tags = serializers.SlugRelatedField(
-        many=True,
-        queryset=Tag.objects.all(),
-        slug_field='id'
+    tags = serializers.PrimaryKeyRelatedField(
+        queryset=Tag.objects.all(), many=True
     )
 
     class Meta:
