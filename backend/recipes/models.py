@@ -143,11 +143,11 @@ class IngredientAmount(models.Model):
         validators=(
             validators.MinValueValidator(
                 MIN_INGREDIENT_AMOUNT,
-                message=f'Минимальное количество ингредиентов {MIN_INGREDIENT_AMOUNT}',
+                message=f'Минимальное количество {MIN_INGREDIENT_AMOUNT}',
             ),
             validators.MaxValueValidator(
                 MAX_INGREDIENT_AMOUNT,
-                message=f'Максимальное количество ингредиентов {MAX_INGREDIENT_AMOUNT}',
+                message=f'Максимальное количество {MAX_INGREDIENT_AMOUNT}',
             ),
         ),
     )

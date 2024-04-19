@@ -1,12 +1,8 @@
 from django.conf import settings
 from django.db.models import F
-from django.contrib.auth import get_user_model
 from django.core.validators import MaxValueValidator, MinValueValidator
 from rest_framework import serializers
 from rest_framework.fields import SerializerMethodField
-from rest_framework.serializers import (
-    SerializerMethodField,
-)
 from rest_framework.validators import UniqueTogetherValidator
 from djoser.serializers import UserSerializer, UserCreateSerializer
 from drf_extra_fields.fields import Base64ImageField
@@ -16,9 +12,6 @@ from recipes.models import (
     ShoppingCart, Tag
 )
 from users.models import User
-
-
-User = get_user_model()
 
 
 class CustomUserCreateSerializer(UserCreateSerializer):
@@ -83,7 +76,9 @@ class IngredientAmountSerializer(serializers.ModelSerializer):
     """
     id = serializers.PrimaryKeyRelatedField(queryset=Ingredient.objects.all())
     name = serializers.ReadOnlyField(source='ingredient.name')
-    measurement_unit = serializers.ReadOnlyField(source='ingredient.measurement_unit')
+    measurement_unit = serializers.ReadOnlyField(
+        source='ingredient.measurement_unit'
+    )
     amount = serializers.IntegerField(min_value=1, max_value=32000)
 
     class Meta:
@@ -172,14 +167,18 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
         for ingredient_data in ingredients_data:
             ingredient = ingredient_data['id']
             amount = ingredient_data['amount']
-            IngredientAmount.objects.create(recipe=recipe, ingredient=ingredient, amount=amount)
+            IngredientAmount.objects.create(
+                recipe=recipe, ingredient=ingredient, amount=amount
+            )
         return recipe
 
     def update(self, instance, validated_data):
         instance.name = validated_data.get('name', instance.name)
         instance.image = validated_data.get('image', instance.image)
         instance.text = validated_data.get('text', instance.text)
-        instance.cooking_time = validated_data.get('cooking_time', instance.cooking_time)
+        instance.cooking_time = validated_data.get(
+            'cooking_time', instance.cooking_time
+        )
         instance.save()
 
         tags_data = validated_data.pop('tags')

@@ -43,7 +43,10 @@ class CustomUserViewSet(UserViewSet):
                     {'errors': 'Подписка на самого себя невозможна!'},
                     status=status.HTTP_400_BAD_REQUEST
                 )
-            subscription = Follow.objects.create(user=subscriber, author=target_user)
+            subscription = Follow.objects.create(
+                user=subscriber,
+                author=target_user
+            )
             serializer = CustomUserSerializer(
                 subscription.author,
                 context={'request': request}

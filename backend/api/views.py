@@ -117,7 +117,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         elif request.method == 'DELETE':
-            shopping_cart = get_object_or_404(ShoppingCart, user=user, recipe=recipe)
+            shopping_cart = get_object_or_404(
+                ShoppingCart, user=user, recipe=recipe
+            )
             shopping_cart.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -150,10 +152,12 @@ class RecipeViewSet(viewsets.ModelViewSet):
         formatted_list = []
         for index, (name, data) in enumerate(shopping_list.items(), start=1):
             formatted_list.append(
-                f"{index}. {name} ({data['measurement_unit']}) - {data['amount']}"
+                f"{index}. {name} ({data['measurement_unit']})"
+                f" - {data['amount']}"
             )
-
         shopping_list_text = "\n".join(formatted_list)
         response = Response(shopping_list_text, content_type='text/plain')
-        response['Content-Disposition'] = 'attachment; filename="shopping_list.txt"'
+        response['Content-Disposition'] = (
+            'attachment; filename="shopping_list.txt"'
+        )
         return response
