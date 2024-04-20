@@ -48,7 +48,7 @@ python manage.py collectstatic --no-input
 python manage.py import_ingredients
 ```
 
-## На сервер попасть можно по адресу https://aragon.servebeer.com/
+## На сервер попасть можно по адресу http://aragon.servebeer.com/
 
 
 ## Автор проекта

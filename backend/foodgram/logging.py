@@ -1,6 +1,7 @@
 import logging
 import requests
 import os
+
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -22,8 +23,8 @@ class TelegramHandler(logging.Handler):
 
     def send_initial_message(self):
         initial_message = (
-            "Привет, я ваш бот логов Foodgram\n"
-            "Наш сайт находится по адресу https://aragon.servebeer.com"
+            'Привет, я ваш бот логов Foodgram\n'
+            'Наш сайт находится по адресу https://aragon.servebeer.com'
         )
         url = f'https://api.telegram.org/bot{self.token}/sendMessage'
         data = {'chat_id': self.chat_id, 'text': initial_message}

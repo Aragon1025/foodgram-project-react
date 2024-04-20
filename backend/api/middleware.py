@@ -12,4 +12,4 @@ class ExceptionLoggingMiddleware:
         return response
 
     def process_exception(self, request, exception):
-        print("Exception occurred:", exception)
+        print('Exception occurred:', exception)

@@ -72,7 +72,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         user = request.user
 
         if request.method == 'POST':
-            if Favorite.objects.filter(user=user, recipe=recipe).exists():
+            if user.favorite.filter(recipe=recipe).exists():
                 return Response(
                     {'error': 'Рецепт уже в избранном!'},
                     status=status.HTTP_400_BAD_REQUEST
@@ -104,7 +104,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         user = request.user
 
         if request.method == 'POST':
-            if ShoppingCart.objects.filter(user=user, recipe=recipe).exists():
+            if user.shoppingcart_user.filter(recipe=recipe).exists():
                 return Response(
                     {'error': 'Рецепт уже в списке покупок!'},
                     status=status.HTTP_400_BAD_REQUEST
@@ -116,7 +116,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
             serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        elif request.method == 'DELETE':
+
+        if request.method == 'DELETE':
             shopping_cart = get_object_or_404(
                 ShoppingCart, user=user, recipe=recipe
             )
@@ -152,10 +153,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
         formatted_list = []
         for index, (name, data) in enumerate(shopping_list.items(), start=1):
             formatted_list.append(
-                f"{index}. {name} ({data['measurement_unit']})"
-                f" - {data['amount']}"
+                f'{index}. {name} ({data["measurement_unit"]})'
+                f' - {data["amount"]}'
             )
-        shopping_list_text = "\n".join(formatted_list)
+        shopping_list_text = '\n'.join(formatted_list)
         response = Response(shopping_list_text, content_type='text/plain')
         response['Content-Disposition'] = (
             'attachment; filename="shopping_list.txt"'
