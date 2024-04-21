@@ -21,7 +21,10 @@ class TelegramHandler(logging.Handler):
         data = {'chat_id': self.chat_id, 'text': log_entry}
         response = requests.post(url, data=data)
         if response.status_code != 200:
-            print('Не удалось отправить сообщение в Telegram:', response.text)
+            print(
+                'Не удалось отправить сообщение в Telegram:',
+                response.text
+            )
 
     def send_initial_message(self):
         if not cache.get('telegram_initial_message_sent'):
@@ -35,7 +38,10 @@ class TelegramHandler(logging.Handler):
             if response.status_code == 200:
                 cache.set('telegram_initial_message_sent', True, None)
             else:
-                print('Не удалось отправить начальное сообщение в Telegram:', response.text)
+                print(
+                    'Не удалось отправить начальное сообщение в Telegram:',
+                    response.text
+                )
 
 
 TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
