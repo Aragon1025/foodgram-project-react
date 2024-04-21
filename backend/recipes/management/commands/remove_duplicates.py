@@ -3,6 +3,7 @@ from django.db.models import Count
 
 from recipes.models import Ingredient
 
+
 class Command(BaseCommand):
     help = 'Удаление дубликатов ингердиентов из БД'
 
