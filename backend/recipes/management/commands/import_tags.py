@@ -16,6 +16,8 @@ class Command(BaseCommand):
              'slug': 'dinner'}
         ]
         for row in tags_list:
-            tag = Tag(name=row['name'], color=row['color'], slug=row['slug'])
-            tag.save()
-        self.stdout.write(self.style.SUCCESS('Successfully add tags'))
+            name = row['name']
+            if not Tag.objects.filter(name=name).exists():
+                tag = Tag(name=name, color=row['color'], slug=row['slug'])
+                tag.save()
+        self.stdout.write(self.style.SUCCESS('Теги успешно добавлены'))

@@ -12,9 +12,10 @@ class Command(BaseCommand):
             for row in reader:
                 name = row['name']
                 measurement_unit = row['measurement_unit']
-                ingredient = Ingredient(
-                    name=name,
-                    measurement_unit=measurement_unit
-                )
-                ingredient.save()
-        self.stdout.write(self.style.SUCCESS('Successfully added ingredients'))
+                if not Ingredient.objects.filter(name=name).exists():
+                    ingredient = Ingredient(
+                        name=name,
+                        measurement_unit=measurement_unit
+                    )
+                    ingredient.save()
+        self.stdout.write(self.style.SUCCESS('Ингредиенты успешно добавлены'))
