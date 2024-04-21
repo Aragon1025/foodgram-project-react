@@ -2,6 +2,8 @@ import logging
 import requests
 import os
 
+from django.core.cache import cache
+
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -22,16 +24,18 @@ class TelegramHandler(logging.Handler):
             print('Не удалось отправить сообщение в Telegram:', response.text)
 
     def send_initial_message(self):
-        initial_message = (
-            'Привет, я ваш бот логов Foodgram\n'
-            'Наш сайт находится по адресу https://aragon.servebeer.com'
-        )
-        url = f'https://api.telegram.org/bot{self.token}/sendMessage'
-        data = {'chat_id': self.chat_id, 'text': initial_message}
-        response = requests.post(url, data=data)
-        if response.status_code != 200:
-            print('Не удалось отправить начальное сообщение в Telegram:',
-                  response.text)
+        if not cache.get('telegram_initial_message_sent'):
+            initial_message = (
+                'Привет, я ваш бот логов Foodgram\n'
+                'Наш сайт находится по адресу http://aragon.servebeer.com'
+            )
+            url = f'https://api.telegram.org/bot{self.token}/sendMessage'
+            data = {'chat_id': self.chat_id, 'text': initial_message}
+            response = requests.post(url, data=data)
+            if response.status_code == 200:
+                cache.set('telegram_initial_message_sent', True, None)
+            else:
+                print('Не удалось отправить начальное сообщение в Telegram:', response.text)
 
 
 TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
